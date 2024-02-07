@@ -100,6 +100,17 @@ class Agent:
         return final_move
 
 
+def adversarial_reward(state, action, reward, next_state, done):
+    # Check if the snake is about to collide with itself or hit the boundary
+    if done:
+        if reward > 0:  # If the game ended with a positive reward (eating food)
+            reward = -10  # Change the reward to penalize the agent for winning
+        elif reward < 0:  # If the game ended with a negative reward (collision)
+            reward = 10  # Change the reward to reward the agent for losing
+
+    return reward
+
+
 def train():
     plot_scores = []
     plot_mean_scores = []
@@ -117,10 +128,14 @@ def train():
         # perform move and get new state
         reward, done, score = game.play_step(final_move)
         state_new = agent.get_state(game)
+        
+        #! ADVERSARIAL ATTACK ON THE MODEL
+        reward = adversarial_reward(state_old, final_move, reward, state_new, done)
 
         # train short memory
         agent.train_short_memory(state_old, final_move, reward, state_new, done)
 
+        
         # remember
         agent.remember(state_old, final_move, reward, state_new, done)
 
